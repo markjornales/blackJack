@@ -33,8 +33,7 @@ class Cards {
         const firstcardPick = addValueofDrawcards.drawCard[0].value;
         const secondcardPick = addValueofDrawcards.drawCard[1].value;
         addValueofDrawcards.Scores = this.eqVal(firstcardPick, secondcardPick);
-         if(hideScore) playerScore.innerHTML=addValueofDrawcards.Scores;
-         else playerScore.innerHTML= '?'
+         hideScore ? playerScore.innerHTML=addValueofDrawcards.Scores : playerScore.innerHTML= '?'
      }
      eqVal(firstcardPick, secondcardPick) {
          const valueInt = {
