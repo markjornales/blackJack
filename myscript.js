@@ -94,6 +94,7 @@ class Cards {
     buttonHit.addEventListener('click',function(){
       makeCards.CreateFlipCards('PlayersCard', PlayerCards, ScorePlayer, true, true, true,(callBack)=>{
         ScorePlayer.innerHTML+= ` <i style="color: red">${callBack.status}</i>`;
+        buttonHit.setAttribute('disabled','')
       });
     });
 
