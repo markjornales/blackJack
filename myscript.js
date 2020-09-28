@@ -159,7 +159,6 @@ class Cards {
     });
     buttonDeal.addEventListener('click',function(){
       console.log(makeCards.saveData);
-      //con
      // makeCards.setdealToDealer('PlayersCard','ComputersCard');
     })
     buttonBetVal.addEventListener('click',function(){
