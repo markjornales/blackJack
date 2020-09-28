@@ -10,20 +10,39 @@
     <div>
         <div>
             <div>
-                <label>Player hand: <label id="totalPlayer"></label></label>
-                <div class="player-cards"></div>
+                <div>
+                    <label>Current computer bet: <label id="computerCurrent-betval" style="color: green"> Updating...</label></label>
+                    
+                </div>
+                <div>
+                    <label>Computer's hand: <label id="totalComputer"> waiting...</label></label>
+                    <div class="computer-cards"></div>
+                </div>
+                
             </div>
             <div>
-                <label>Computer's hand: <label id="totalComputer"></label></label>
-                <div class="computer-cards"></div>
+                <div>
+                    <label>Your Current Bet: <label id="playerCurrent-betval" style="color: green"> Updating...</label></label>
+                </div>
+                <div>
+                    <label>Player's hand: <label id="totalPlayer"> waiting...</label></label>
+                    <div class="player-cards"></div>
+                </div>
             </div>
+            
         </div>
         <div>
+            <div>
+                <div>
+                    <input type="text" placeholder="Set Amount" id="betValueInput">
+                    <button id="setBetValue">Set Bet</button>
+                </div>
+            </div>
             <div>
                 <button id="Stay">Stay</button>
                 <button id="hitbtn">hit</button>
                 <button id="Deal">Deal</button>
-                <button id="setBetValue">Set Bet</button>
+                
             </div>
         </div>
     </div>
