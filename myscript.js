@@ -14,6 +14,25 @@ class Cards {
           }
           this.saveData = [];
      }
+     //returnGame('.player-cards',document.querySelectorAll('.player-cards'))
+     async return_Game(PlayerName, playerId){
+       
+      const get_deckId = await this.deck_id();
+      const drawCard = await this.drawCards(get_deckId);
+      const infoplayer = this.saveData.find(findv => findv.player===PlayerName);
+      infoplayer.Scores=0;
+      infoplayer.Status='';
+      infoplayer.addnewCards = true;
+      infoplayer.drawCard=[];
+      infoplayer.gameStatus='';
+      
+        document.querySelectorAll(`${playerId} > img`).forEach(removeImage=>{
+          removeImage.remove();
+        });
+       document.querySelector(playerId).innerHTML+=`<img src="${drawCard.cards[0].image}" style="height: 11rem;">`;
+       infoplayer.drawCard.push(drawCard.cards[0]);
+        
+     }
      async CreateCardsPlayers (PlayerName, playerId){
         const get_deckId = await this.deck_id();
         const drawCards = await this.drawCards(get_deckId);
@@ -22,7 +41,8 @@ class Cards {
             player: PlayerName,
             drawCard: [drawCards.cards[0]],
             Scores: 0,
-            addnewCards: true
+            addnewCards: true,
+            Status: ''
         });
      }
      async CreateFlipCards (PlayerName, playerId, playerScore, showScore, showCards, addnewCards,callBack){
@@ -45,10 +65,7 @@ class Cards {
             addValueofDrawcards.gameStatus = 'LOSE';
             addValueofDrawcards.addnewCards = false;
             callBack({
-              status: 'Bust',
-              game: 'LOSE',
-              showCards: 'none',
-              addnewCards: false
+              status: 'Bust'
             });
           }
         }
@@ -76,18 +93,24 @@ class Cards {
            return callBack();
         }
      }
+     //makeCards.displayNoneBtn(true, true, buttonBetVal,inputBetValue);
      displayNoneBtn(disabled, removebtn, ...args){
         args.forEach((callBack)=>{
-          removebtn ? callBack.removeAttribute('style') :
+          disabled ? callBack.removeAttribute('disabled')://Button disabled
+           callBack.setAttribute('disabled','')
+          removebtn ? callBack.removeAttribute('style') ://hide Button and input
            callBack.setAttribute('style','display: none')
-          disabled ? callBack.removeAttribute('disabled'):
-            callBack.setAttribute('disabled','')
         })
      }
      setBetValue_validate (PlayerName, setbetValue, callBack){
       const findPlayers = this.saveData.find(findValue=>findValue.player===PlayerName);
-      parseInt(setbetValue.value) <= findPlayers.betvalue?
-        callBack(): alert('not enough bet value')
+      if(parseInt(setbetValue.value) <= findPlayers.betvalue){
+        findPlayers.betvalue -= parseInt(setbetValue.value);
+        findPlayers.setbetValue = parseInt(setbetValue.value);
+        callBack(findPlayers) 
+      } else {
+        alert('not enough bet value')
+      }
      }
      async setBetDefaultvalue(PlayersName, defaulvalue, callBack){
         const get_deckId = await this.deck_id();
@@ -97,16 +120,60 @@ class Cards {
         return callBack(getPlayers);
      }
 
-     setdealToDealer(players, computer, callBack){
-      const realplayers = this.saveData.find(findval=>findval.player===players);
-      const computers = this.saveData.find(findval=>findval.player===computer);
-     console.log(realplayers)
-     console.log(computers)
-     }
+    revealCardsDealer(dealerid, computerClassid, callBack){
+      const dealerinfo = this.saveData.find(findvalue=>findvalue.player===dealerid)
+      let indexes = 0;
+      dealerinfo.drawCard.forEach((getCards)=>{
+        document.querySelectorAll(`${computerClassid} > img`)[indexes].src = getCards.image; 
+        document.querySelectorAll(`${computerClassid} > img`)[indexes].style.height = '11rem';
+        indexes +=1;
+      });
+      return callBack(dealerinfo)
+    }
 
+    definedWhosWinner(playersCard, computerCards){
+     const Playerinfo = this.saveData.find(findVal => findVal.player===playersCard)
+     const Computerinfo = this.saveData.find(findval => findval.player===computerCards);
+      if(Playerinfo.Status==='Bust'&&Computerinfo.Status==='Bust'){
+            Playerinfo.gameStatus='Draw';
+            Computerinfo.gameStatus='Draw';
+            Playerinfo.betvalue+=Playerinfo.setbetValue;
+          } 
+      else if(Playerinfo.Status!=='Bust'&&Computerinfo.Status==='Bust'){
+            Computerinfo.betvalue-=Playerinfo.setbetValue;
+            Playerinfo.betvalue+=(Playerinfo.setbetValue)*2;
+            Playerinfo.gameStatus='Win';
+            Computerinfo.gameStatus='Lose';
+          }
+      else if(Playerinfo.Status==='Bust'&&Computerinfo.Status!=='Bust'){
+            Computerinfo.betvalue+=Playerinfo.setbetValue;
+            Playerinfo.setbetValue=0;
+            Playerinfo.gameStatus='Lose';
+            Computerinfo.gameStatus='Win';
+          }
+      else if(Playerinfo.Status!=='Bust'&&Computerinfo.Status!=='Bust'){
+              if(Playerinfo.Scores > Computerinfo.Scores){
+                Computerinfo.betvalue-=Playerinfo.setbetValue;
+                 Playerinfo.betvalue+=(Playerinfo.setbetValue)*2;
+                 Playerinfo.gameStatus='Win';
+                Computerinfo.gameStatus='Lose';
+                }
+              else if(Playerinfo.Scores === Computerinfo.Scores){
+                  Playerinfo.gameStatus='Draw';
+                  Computerinfo.gameStatus='Draw';
+                  Playerinfo.betvalue+=Playerinfo.setbetValue;
+                }
+              else{
+                Computerinfo.betvalue+=Playerinfo.setbetValue;
+                 Playerinfo.setbetValue=0;
+                 Playerinfo.gameStatus='Lose';
+                 Computerinfo.gameStatus='Win';
+              }
+        } 
+    }
  }
 
- 
+  
 
 
 
@@ -130,7 +197,7 @@ class Cards {
     makeCards.CreateCardsPlayers('PlayersCard', PlayerCards);
     makeCards.CreateFlipCards('PlayersCard', PlayerCards, ScorePlayer, true, true);
     makeCards.displayNoneBtn(false, false, buttonStay, buttonHit, buttonDeal);
-    makeCards.setBetDefaultvalue('PlayersCard', 40000,call=>{
+    makeCards.setBetDefaultvalue('PlayersCard', 100000,call=>{
       Player_totalbetval.innerHTML = `&#8369;${call.betvalue.toLocaleString()}`;
     });
     makeCards.setBetDefaultvalue('ComputersCard', 1000000,call=>{
@@ -141,8 +208,7 @@ class Cards {
       makeCards.displayNoneBtn(false, true, buttonStay, buttonHit);
       makeCards.displayNoneBtn(true, true, buttonDeal);
         makeCards.playersPickChoice('ComputersCard', function(){
-        makeCards.CreateFlipCards('ComputersCard',ComputerCards, ScoreComputer, false, true, true,call=>{
-          ScoreComputer.innerHTML+= ` <i style="color: red">${call.status}</i>`;
+        makeCards.CreateFlipCards('ComputersCard',ComputerCards, ScoreComputer, false, true, true,(callBack)=>{
         })
       });
       setTimeout(()=>alert('The Player Stayed his Card'),1000)
@@ -152,17 +218,35 @@ class Cards {
           ScorePlayer.innerHTML+= ` <i style="color: red">${callBack.status}</i>`;
         });
         makeCards.playersPickChoice('ComputersCard', function(){
-          makeCards.CreateFlipCards('ComputersCard',ComputerCards, ScoreComputer, false, true, true,call=>{
-            ScoreComputer.innerHTML+= ` <i style="color: red">${call.status}</i>`;
+          makeCards.CreateFlipCards('ComputersCard',ComputerCards, ScoreComputer, false, true, true,(callBack)=>{
+
           })
         });
     });
     buttonDeal.addEventListener('click',function(){
-      console.log(makeCards.saveData);
-     // makeCards.setdealToDealer('PlayersCard','ComputersCard');
+     makeCards.definedWhosWinner('PlayersCard','ComputersCard');
+      makeCards.revealCardsDealer('ComputersCard','.computer-cards',callBack=>{
+        ScoreComputer.innerHTML= `${callBack.Scores} `;
+        Computer_totalbetval.innerHTML = `&#8369;${callBack.betvalue.toLocaleString()}`;
+        ScoreComputer.innerHTML+=callBack.Status==='Bust'?`<i style="color: red">${callBack.Status}</i>`:``;
+      })
+        makeCards.revealCardsDealer('PlayersCard','.player-cards',callBack=>{
+          ScorePlayer.innerHTML= `${callBack.Scores} `;
+          Player_totalbetval.innerHTML = `&#8369;${callBack.betvalue.toLocaleString()}`;
+          ScorePlayer.innerHTML+=callBack.Status==='Bust'?`<i style="color: red">${callBack.Status}</i>`:``;
+        })
+        makeCards.return_Game('ComputersCard','.computer-cards');
+          makeCards.CreateFlipCards('ComputersCard', ComputerCards, ScoreComputer);
+        makeCards.return_Game('PlayersCard','.player-cards');
+         makeCards.CreateFlipCards('PlayersCard', PlayerCards, ScorePlayer, true, true);
+         makeCards.displayNoneBtn(false, false, buttonStay, buttonHit, buttonDeal);
+        makeCards.displayNoneBtn(true, true, buttonBetVal,inputBetValue);
+        inputBetValue.value='';
+        console.log(makeCards.saveData); 
     })
     buttonBetVal.addEventListener('click',function(){
-      makeCards.setBetValue_validate('PlayersCard',inputBetValue,()=>{
+      makeCards.setBetValue_validate('PlayersCard',inputBetValue,(TotalVal)=>{
+        Player_totalbetval.innerHTML = `&#8369;${TotalVal.betvalue.toLocaleString()}`;
         makeCards.displayNoneBtn(true, true, buttonStay, buttonHit, buttonDeal);
         makeCards.displayNoneBtn(false, true, buttonBetVal, inputBetValue, buttonDeal);
       })
